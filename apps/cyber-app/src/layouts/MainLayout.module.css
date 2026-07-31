@@ -1,0 +1,106 @@
+/* Styles for MainLayout using CSS Modules */
+.root {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  color: #111827;
+}
+@media (prefers-color-scheme: dark) {
+  .root {
+    background-color: #111827;
+    color: #f3f4f6;
+  }
+}
+
+.header {
+  background: #ffffff;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+}
+@media (prefers-color-scheme: dark) {
+  .header {
+    background: #1f2937;
+  }
+}
+
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+@media (min-width: 640px) {
+  .container { padding: 0 1.5rem; }
+}
+@media (min-width: 1024px) {
+  .container { padding: 0 2rem; }
+}
+
+.headerInner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.brandTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.nav {
+  display: none;
+  gap: 0.5rem;
+}
+@media (min-width: 768px) {
+  .nav { display: flex; }
+}
+
+.link {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  color: inherit;
+}
+.link:hover {
+  background: #f3f4f6;
+}
+@media (prefers-color-scheme: dark) {
+  .link:hover { background: #374151; }
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.userText {
+  font-size: 0.875rem;
+}
+
+.signOutBtn {
+  font-size: 0.875rem;
+  background: #dc2626;
+  color: #ffffff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+}
+.signOutBtn:hover { background: #b91c1c; }
+
+.main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+@media (min-width: 640px) {
+  .main { padding: 2rem 1.5rem; }
+}
+@media (min-width: 1024px) {
+  .main { padding: 2rem 2rem; }
+}
