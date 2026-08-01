@@ -1,0 +1,75 @@
+name: Dependency Scan
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 2 * * 1' # Every Monday at 02:00 UTC
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  NODE_VERSION: '24.x'
+
+jobs:
+
+  dotnet:
+
+    name: Scan .NET Dependencies
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore packages
+        run: |
+          dotnet restore services/AuthService/AuthService.sln
+
+      - name: Scan NuGet packages
+        run: |
+          dotnet list \
+            services/AuthService/AuthService.sln \
+            package \
+            --vulnerable \
+            --include-transitive
+
+  node:
+
+    name: Scan Node Dependencies
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: apps/cyber-app
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/cyber-app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=high

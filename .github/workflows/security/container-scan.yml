@@ -1,0 +1,66 @@
+name: Container Security Scan
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+  schedule:
+    # Weekly container vulnerability scan
+    - cron: '0 3 * * 1'
+
+permissions:
+  contents: read
+  security-events: write
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build-and-scan:
+    name: Build and Scan Containers
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: cyber-app
+            path: apps/cyber-app
+            dockerfile: apps/cyber-app/Dockerfile
+          
+          - name: authservice
+            path: services/AuthService
+            dockerfile: services/AuthService/Dockerfile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      ###################################
+      # Docker Build
+      ###################################
+      - name: Build Docker Image
+        run: |
+          docker build -f ${{ matrix.dockerfile }} -t ${{ matrix.name }}:scan ${{ matrix.path }}
+
+      ###################################
+      # Trivy Scanner
+      ###################################
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ matrix.name }}:scan'
+          format: 'sarif'
+          output: 'trivy-${{ matrix.name }}.sarif'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+
+      ###################################
+      # Upload Security Report
+      ###################################
+      - name: Upload Trivy SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-${{ matrix.name }}.sarif
+          category: container-${{ matrix.name }}

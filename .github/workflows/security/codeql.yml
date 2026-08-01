@@ -1,0 +1,83 @@
+name: CodeQL Security Analysis
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+  schedule:
+    # Weekly security scan
+    - cron: '30 2 * * 1'
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - csharp
+          - javascript
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      ####################################
+      # Setup CodeQL
+      ####################################
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      ####################################
+      # Build C#
+      ####################################
+      - name: Setup .NET
+        if: matrix.language == 'csharp'
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build AuthService
+        if: matrix.language == 'csharp'
+        run: |
+          dotnet restore services/AuthService/AuthService.sln
+          dotnet build services/AuthService/AuthService.sln --configuration Release --no-restore
+
+      ####################################
+      # Build Frontend
+      ####################################
+      - name: Setup Node.js
+        if: matrix.language == 'javascript'
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24.x'
+          cache: npm
+          cache-dependency-path: apps/cyber-app/package-lock.json
+
+      - name: Build Cyber App
+        if: matrix.language == 'javascript'
+        working-directory: apps/cyber-app
+        run: |
+          npm ci
+          npm run build
+
+      ####################################
+      # Analyze
+      ####################################
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
