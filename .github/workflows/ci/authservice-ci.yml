@@ -1,0 +1,70 @@
+name: AuthService CI
+
+on:
+  pull_request:
+    paths:
+      - 'services/AuthService/**'
+
+  push:
+    branches:
+      - main
+
+    paths:
+      - 'services/AuthService/**'
+
+
+permissions:
+  contents: read
+
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  SOLUTION_PATH: services/AuthService/AuthService.slnx
+
+
+jobs:
+
+  build:
+    name: Build AuthService
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: |
+          dotnet restore ${{ env.SOLUTION_PATH }}
+
+      - name: Build solution
+        run: |
+          dotnet build ${{ env.SOLUTION_PATH }} --configuration Release --no-restore
+
+      - name: Run tests
+        run: |
+          dotnet test ${{ env.SOLUTION_PATH }} --configuration Release --no-build --verbosity normal
+
+
+      - name: Publish AuthService
+        run: |
+          dotnet publish services/AuthService/AuthService.API/AuthService.API.csproj --configuration Release --output ./publish
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: authservice-build
+          path: ./publish
