@@ -214,32 +214,62 @@ jobs:
 
   security:
 
-
     name: Security Scan
 
     runs-on: ubuntu-latest
 
 
+    permissions:
+
+      contents: read
+
+      pull-requests: read
+
+      security-events: write
+
+
     steps:
 
 
-      - uses: actions/checkout@v4
+      - name: Checkout
+
+        uses: actions/checkout@v5
+
+        with:
+
+          fetch-depth: 0
 
 
 
-      #
-      # Secret scanning
-      #
+      ################################
+      # Secret Detection
+      ################################
 
       - name: Gitleaks
 
         uses: gitleaks/gitleaks-action@v2
 
+        env:
+
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
-      #
+
+      ################################
+      # Dependency Vulnerability
+      ################################
+
+      - name: Dependency Audit
+
+        run: |
+
+          dotnet list package --vulnerable --include-transitive
+
+
+
+      ################################
       # CodeQL
-      #
+      ################################
 
       - name: Initialize CodeQL
 
@@ -247,10 +277,10 @@ jobs:
 
         with:
 
-          languages: javascript,csharp
+          languages: csharp,javascript
 
 
 
-      - name: Analyze CodeQL
+      - name: CodeQL Analysis
 
         uses: github/codeql-action/analyze@v3
