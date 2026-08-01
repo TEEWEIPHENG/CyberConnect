@@ -1,0 +1,252 @@
+name: CyberConnect CI
+
+
+on:
+
+  pull_request:
+
+  push:
+    branches:
+      - main
+      - develop
+
+
+permissions:
+
+  contents: read
+
+  security-events: write
+
+
+
+jobs:
+
+
+##################################
+# Detect Changes
+##################################
+
+  changes:
+
+    name: Detect Changes
+
+    runs-on: ubuntu-latest
+
+    outputs:
+
+      frontend:
+        ${{ steps.filter.outputs.frontend }}
+
+      authservice:
+        ${{ steps.filter.outputs.authservice }}
+
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+
+      - uses: dorny/paths-filter@v3
+
+        id: filter
+
+        with:
+
+          filters: |
+
+            frontend:
+              - 'apps/cyber-app/**'
+
+            authservice:
+              - 'services/AuthService/**'
+
+
+
+##################################
+# Frontend CI
+##################################
+
+  frontend:
+
+
+    needs: changes
+
+    if: needs.changes.outputs.frontend == 'true'
+
+
+    runs-on: ubuntu-latest
+
+
+    defaults:
+
+      run:
+
+        working-directory: apps/cyber-app
+
+
+
+    steps:
+
+
+      - uses: actions/checkout@v4
+
+
+
+      - name: Setup Node
+
+        uses: actions/setup-node@v4
+
+        with:
+
+          node-version: 22
+
+          cache: npm
+
+          cache-dependency-path: apps/cyber-app/package-lock.json
+
+
+
+      - name: Install
+
+        run:
+
+          npm ci
+
+
+
+      - name: Lint
+
+        run:
+
+          npm run lint
+
+
+
+      - name: Test
+
+        run:
+
+          npm test
+
+
+
+      - name: Build
+
+        run:
+
+          npm run build
+
+
+
+
+##################################
+# Auth Service CI
+##################################
+
+
+  authservice:
+
+
+    needs: changes
+
+    if: needs.changes.outputs.authservice == 'true'
+
+
+    runs-on: ubuntu-latest
+
+
+    defaults:
+
+      run:
+
+        working-directory: services/AuthService
+
+
+
+    steps:
+
+
+      - uses: actions/checkout@v4
+
+
+
+      - name: Setup .NET
+
+        uses: actions/setup-dotnet@v4
+
+        with:
+
+          dotnet-version: 8.x
+
+
+
+      - name: Restore
+
+        run:
+
+          dotnet restore
+
+
+
+      - name: Build
+
+        run:
+
+          dotnet build --no-restore
+
+
+
+      - name: Test
+
+        run:
+
+          dotnet test --no-build
+
+
+
+##################################
+# Security Scan
+##################################
+
+  security:
+
+
+    name: Security Scan
+
+    runs-on: ubuntu-latest
+
+
+    steps:
+
+
+      - uses: actions/checkout@v4
+
+
+
+      #
+      # Secret scanning
+      #
+
+      - name: Gitleaks
+
+        uses: gitleaks/gitleaks-action@v2
+
+
+
+      #
+      # CodeQL
+      #
+
+      - name: Initialize CodeQL
+
+        uses: github/codeql-action/init@v3
+
+        with:
+
+          languages: javascript,csharp
+
+
+
+      - name: Analyze CodeQL
+
+        uses: github/codeql-action/analyze@v3

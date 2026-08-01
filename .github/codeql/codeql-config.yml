@@ -1,0 +1,15 @@
+name: CyberConnect Security
+
+
+paths:
+
+  - apps
+
+  - services
+
+
+paths-ignore:
+
+  - node_modules
+  - bin
+  - obj
