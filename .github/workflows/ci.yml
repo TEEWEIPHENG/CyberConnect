@@ -14,7 +14,7 @@ on:
 permissions:
 
   contents: read
-
+  pull-requests: read
   security-events: write
 
 
@@ -186,7 +186,11 @@ jobs:
 
           dotnet restore
 
+      - name: Vulnerability Scan
 
+        run:
+          
+          dotnet list package --vulnerable --include-transitive
 
       - name: Build
 
