@@ -293,11 +293,9 @@ jobs:
       - name: Build .NET
         run: |
 
-          dotnet restore CyberConnect.sln
+          dotnet restore CyberConnect.slnx
 
-          dotnet build CyberConnect.sln \
-            --configuration Release \
-            --no-restore
+          dotnet build CyberConnect.slnx --configuration Release --no-restore
 
       ##################################
       # CodeQL Analyze
