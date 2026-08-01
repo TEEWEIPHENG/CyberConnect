@@ -1,0 +1,23 @@
+name: Debug GitHub Token
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+
+  debug:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v5
+
+      - run: |
+          echo "Repository: ${{ github.repository }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Actor: ${{ github.actor }}"
