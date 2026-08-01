@@ -267,6 +267,14 @@ jobs:
 
 
 
+      ##################################
+      # Setup .NET
+      ##################################
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.10
       ################################
       # CodeQL
       ################################
@@ -279,7 +287,21 @@ jobs:
 
           languages: csharp,javascript
 
+      ##################################
+      # Build for CodeQL
+      ##################################
+      - name: Build .NET
+        run: |
 
+          dotnet restore CyberConnect.sln
+
+          dotnet build CyberConnect.sln \
+            --configuration Release \
+            --no-restore
+
+      ##################################
+      # CodeQL Analyze
+      ##################################
 
       - name: CodeQL Analysis
 
