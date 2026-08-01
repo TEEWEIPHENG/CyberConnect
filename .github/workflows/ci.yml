@@ -11,14 +11,14 @@ permissions:
 
 jobs:
   detect:
-    uses: ./.github/workflows/ci/detect-changes.yml
+    uses: ./.github/workflows/detect-changes.yml
 
   authservice:
     needs: detect
     if: needs.detect.outputs.authservice == 'true'
-    uses: ./.github/workflows/ci/authservice-ci.yml
+    uses: ./.github/workflows/authservice-ci.yml
 
   cyberapp:
     needs: detect
     if: needs.detect.outputs.frontend == 'true'
-    uses: ./.github/workflows/ci/cyberapp-ci.yml
+    uses: ./.github/workflows/cyberapp-ci.yml
