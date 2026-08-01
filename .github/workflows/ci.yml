@@ -303,5 +303,6 @@ jobs:
       ##################################
 
       - name: CodeQL Analysis
-
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: github/codeql-action/analyze@v3
