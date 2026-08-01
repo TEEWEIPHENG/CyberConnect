@@ -1,0 +1,22 @@
+version: 2
+
+updates:
+
+
+- package-ecosystem: npm
+
+  directory: "/apps/cyber-app"
+
+  schedule:
+
+    interval: weekly
+
+
+
+- package-ecosystem: nuget
+
+  directory: "/services/AuthService"
+
+  schedule:
+
+    interval: weekly
