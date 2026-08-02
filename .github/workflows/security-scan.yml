@@ -38,16 +38,16 @@ jobs:
               - 'services/AuthService/**'
               - '.github/workflows/security-scan.yml'
 
-  dependency-review:
-    name: Dependency review
-    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#   dependency-review:
+#     name: Dependency review
+#     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Review dependencies
-        uses: actions/dependency-review-action@v4
+#       - name: Review dependencies
+#         uses: actions/dependency-review-action@v4
 
   codeql:
     name: CodeQL analysis

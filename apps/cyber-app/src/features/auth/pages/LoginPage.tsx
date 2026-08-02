@@ -1,15 +1,21 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useAuthStore } from '@/features/auth/services/AuthProvider'
+import { useAuthStore } from '@/features/auth/services/useAuthStore'
 import { PrimaryButton } from '@/shared/components/PrimaryButton'
 import { InputText } from '@/shared/components/InputText'
 import { InputPassword } from '@/shared/components/InputPassword'
 import styles from './LoginPage.module.css'
 
+interface LocationState {
+  from?: {
+    pathname?: string
+  }
+}
+
 export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const from = (location.state as any)?.from?.pathname ?? '/dashboard'
+  const from = (location.state as LocationState | null)?.from?.pathname ?? '/dashboard'
 
   const { login, loading, error } = useAuthStore(s => ({
     login: s.login,
@@ -20,16 +26,11 @@ export function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    try {
-      //bypass login for now
-      await login({ username, password })
-      
-      navigate(from, { replace: true })
-    } catch (err) {
-      // error available from store
-    }
+
+    await login({ username, password })
+    navigate(from, { replace: true })
   }
 
   return (

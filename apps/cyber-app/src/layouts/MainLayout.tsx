@@ -1,5 +1,5 @@
 import { Link, Outlet } from 'react-router-dom'
-import { useAuthStore } from '@/features/auth/services/AuthProvider'
+import { useAuthStore } from '@/features/auth/services/useAuthStore'
 import styles from './MainLayout.module.css'
 
 export function MainLayout() {
