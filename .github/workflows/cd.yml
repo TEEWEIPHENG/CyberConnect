@@ -32,7 +32,7 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Detect changed paths
         id: filter
@@ -54,10 +54,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -76,7 +76,7 @@ jobs:
 
       - name: Scan frontend image
         if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
-        uses: aquasecurity/trivy-action@0.32.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
           format: table
@@ -97,7 +97,7 @@ jobs:
 
       - name: Scan Auth service image
         if: needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
-        uses: aquasecurity/trivy-action@0.32.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.AUTH_SERVICE_IMAGE }}:${{ github.sha }}
           format: table
