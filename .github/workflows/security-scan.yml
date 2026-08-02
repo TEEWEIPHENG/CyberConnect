@@ -24,7 +24,7 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Detect changed paths
         id: filter
@@ -44,7 +44,7 @@ jobs:
 #     runs-on: ubuntu-latest
 #     steps:
 #       - name: Checkout repository
-#         uses: actions/checkout@v4
+#         uses: actions/checkout@v7
 
 #       - name: Review dependencies
 #         uses: actions/dependency-review-action@v4
@@ -65,7 +65,7 @@ jobs:
           - csharp
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
