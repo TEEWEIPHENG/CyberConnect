@@ -1,18 +1,7 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
-import { authApi } from './authApi'
+import { useState, type ReactNode } from 'react'
 import { setAccessToken } from '@/shared/services/httpClient'
 import type { LoginResponse, LoginRequest } from '@/features/auth/types/login.types'
-
-type AuthState = {
-  isAuthenticated: boolean
-  user: LoginResponse['user'] | null
-  loading: boolean
-  error: string | null
-  login: (credentials: LoginRequest) => Promise<void>
-  logout: () => void
-}
-
-const AuthContext = createContext<AuthState | undefined>(undefined)
+import { AuthContext, type AuthState } from '@/features/auth/services/authContext'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<LoginResponse['user'] | null>(null)
@@ -39,8 +28,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(res.user)
       // persist token and configure http client
       setAccessToken(res.accessToken)
-    } catch (err: any) {
-      setError(err?.message ?? 'Login failed')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Login failed'
+      setError(message)
       throw err
     } finally {
       setLoading(false)
@@ -62,13 +52,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-// selector-friendly hook: accepts optional selector function to mimic Zustand-like usage
-export function useAuthStore<T = AuthState>(selector?: (s: AuthState) => T): T {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuthStore must be used within an AuthProvider')
-  return selector ? selector(ctx) : (ctx as unknown as T)
 }
 
 export default AuthContext

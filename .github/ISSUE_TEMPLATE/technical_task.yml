@@ -1,0 +1,44 @@
+name: Technical Task
+description: Engineering task or internal improvement
+title: "[TASK] "
+labels:
+  - task
+
+body:
+
+
+  - type: input
+    id: area
+
+    attributes:
+      label: Area
+      placeholder: "CI/CD, Backend, Frontend, Infrastructure"
+
+
+  - type: textarea
+    id: objective
+
+    attributes:
+      label: Objective
+
+    validations:
+      required: true
+
+
+  - type: textarea
+    id: implementation
+
+    attributes:
+      label: Implementation Notes
+
+
+  - type: textarea
+    id: acceptance
+
+    attributes:
+      label: Acceptance Criteria
+
+      placeholder: |
+        - [ ] Tests added
+        - [ ] Documentation updated
+        - [ ] Security reviewed

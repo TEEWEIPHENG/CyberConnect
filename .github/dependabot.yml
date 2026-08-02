@@ -2,21 +2,39 @@ version: 2
 
 updates:
 
+  #
+  # NuGet
+  #
+  - package-ecosystem: "nuget"
+    directory: "/services/AuthService"
+    schedule:
+      interval: weekly
 
-- package-ecosystem: npm
+    labels:
+      - dependencies
 
-  directory: "/apps/cyber-app"
+    open-pull-requests-limit: 10
 
-  schedule:
+  #
+  # npm
+  #
+  - package-ecosystem: "npm"
+    directory: "/apps/cyber-app"
+    schedule:
+      interval: weekly
 
-    interval: weekly
+    labels:
+      - dependencies
 
+    open-pull-requests-limit: 10
 
+  #
+  # GitHub Actions
+  #
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: weekly
 
-- package-ecosystem: nuget
-
-  directory: "/services/AuthService"
-
-  schedule:
-
-    interval: weekly
+    labels:
+      - github-actions

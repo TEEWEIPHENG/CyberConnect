@@ -1,6 +1,6 @@
 import axios, { AxiosError, type AxiosInstance } from 'axios'
 
-const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL || '/api'
+const API_BASE = import.meta.env?.VITE_API_BASE_URL || '/api'
 
 const client: AxiosInstance = axios.create({
 	baseURL: API_BASE,
@@ -32,8 +32,9 @@ client.interceptors.response.use(
 		if (error.response?.status === 401) {
 			try {
 				localStorage.removeItem('accessToken')
-			} catch {}
-			// Redirect to login to obtain a fresh token
+			} catch (storageError) {
+				console.warn('Unable to clear access token on 401', storageError)
+			}
 			if (typeof window !== 'undefined') {
 				window.location.href = '/login'
 			}

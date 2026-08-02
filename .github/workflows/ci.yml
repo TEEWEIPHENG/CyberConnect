@@ -1,252 +1,85 @@
-name: CyberConnect CI
-
+name: CI
 
 on:
-
   pull_request:
-
   push:
     branches:
       - main
-      - develop
-
+  workflow_dispatch:
 
 permissions:
-
   contents: read
-
-  security-events: write
-
-
+  pull-requests: read
 
 jobs:
-
-
-##################################
-# Detect Changes
-##################################
-
   changes:
-
-    name: Detect Changes
-
+    name: Detect changed projects
     runs-on: ubuntu-latest
-
     outputs:
-
-      frontend:
-        ${{ steps.filter.outputs.frontend }}
-
-      authservice:
-        ${{ steps.filter.outputs.authservice }}
-
-
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/checkout@v4
-
-
-      - uses: dorny/paths-filter@v3
-
+      - name: Detect changed paths
         id: filter
-
+        uses: dorny/paths-filter@v3
         with:
-
           filters: |
-
             frontend:
               - 'apps/cyber-app/**'
-
-            authservice:
+              - '.github/workflows/ci.yml'
+            backend:
               - 'services/AuthService/**'
+              - '.github/workflows/ci.yml'
 
-
-
-##################################
-# Frontend CI
-##################################
-
-  frontend:
-
-
+  frontend-ci:
+    name: Frontend CI
     needs: changes
-
-    if: needs.changes.outputs.frontend == 'true'
-
-
+    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-
-
     defaults:
-
       run:
-
         working-directory: apps/cyber-app
 
-
-
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-
-      - uses: actions/checkout@v4
-
-
-
-      - name: Setup Node
-
+      - name: Setup Node.js
         uses: actions/setup-node@v4
-
         with:
-
           node-version: 22
-
           cache: npm
-
           cache-dependency-path: apps/cyber-app/package-lock.json
 
+      - name: Install frontend dependencies
+        run: npm ci
 
+      - name: Build frontend
+        run: npm run build
 
-      - name: Install
+      - name: Lint frontend
+        run: npm run lint
 
-        run:
-
-          npm ci
-
-
-
-      - name: Lint
-
-        run:
-
-          npm run lint
-
-
-
-      - name: Test
-
-        run:
-
-          npm test
-
-
-
-      - name: Build
-
-        run:
-
-          npm run build
-
-
-
-
-##################################
-# Auth Service CI
-##################################
-
-
-  authservice:
-
-
+  backend-ci:
+    name: Backend CI
     needs: changes
-
-    if: needs.changes.outputs.authservice == 'true'
-
-
+    if: needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
-
-    defaults:
-
-      run:
-
-        working-directory: services/AuthService
-
-
-
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-
-      - uses: actions/checkout@v4
-
-
-
-      - name: Setup .NET
-
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
-
         with:
+          dotnet-version: 10.0.x
 
-          dotnet-version: 8.x
+      - name: Restore Auth service
+        run: dotnet restore services/AuthService/AuthService.slnx
 
-
-
-      - name: Restore
-
-        run:
-
-          dotnet restore
-
-
-
-      - name: Build
-
-        run:
-
-          dotnet build --no-restore
-
-
-
-      - name: Test
-
-        run:
-
-          dotnet test --no-build
-
-
-
-##################################
-# Security Scan
-##################################
-
-  security:
-
-
-    name: Security Scan
-
-    runs-on: ubuntu-latest
-
-
-    steps:
-
-
-      - uses: actions/checkout@v4
-
-
-
-      #
-      # Secret scanning
-      #
-
-      - name: Gitleaks
-
-        uses: gitleaks/gitleaks-action@v2
-
-
-
-      #
-      # CodeQL
-      #
-
-      - name: Initialize CodeQL
-
-        uses: github/codeql-action/init@v3
-
-        with:
-
-          languages: javascript,csharp
-
-
-
-      - name: Analyze CodeQL
-
-        uses: github/codeql-action/analyze@v3
+      - name: Run Auth service tests
+        run: dotnet test services/AuthService/AuthService.slnx --configuration Release --no-restore

@@ -1,0 +1,106 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows:
+      - Security Scan
+    types:
+      - completed
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
+env:
+  REGISTRY: ghcr.io
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/cyber-app
+  AUTH_SERVICE_IMAGE: ghcr.io/${{ github.repository_owner }}/auth-service
+
+jobs:
+  changes:
+    name: Detect changed projects
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            frontend:
+              - 'apps/cyber-app/**'
+              - '.github/workflows/cd.yml'
+            backend:
+              - 'services/AuthService/**'
+              - '.github/workflows/cd.yml'
+
+  publish-images:
+    name: Publish container images
+    needs: changes
+    if: github.event_name != 'pull_request' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push frontend image
+        if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/cyber-app
+          file: apps/cyber-app/Dockerfile
+          push: true
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:latest
+            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+
+      - name: Scan frontend image
+        if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+        uses: aquasecurity/trivy-action@0.32.0
+        with:
+          image-ref: ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+
+      - name: Build and push Auth service image
+        if: needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
+        uses: docker/build-push-action@v6
+        with:
+          context: services/AuthService
+          file: services/AuthService/AuthService.API/Dockerfile
+          push: true
+          tags: |
+            ${{ env.AUTH_SERVICE_IMAGE }}:latest
+            ${{ env.AUTH_SERVICE_IMAGE }}:${{ github.sha }}
+
+      - name: Scan Auth service image
+        if: needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
+        uses: aquasecurity/trivy-action@0.32.0
+        with:
+          image-ref: ${{ env.AUTH_SERVICE_IMAGE }}:${{ github.sha }}
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
