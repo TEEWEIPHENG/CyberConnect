@@ -1,0 +1,90 @@
+name: Dependency Update Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+  schedule:
+    # Every Monday at 03:00 UTC
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  NODE_VERSION: "24.x"
+
+jobs:
+
+  authservice:
+
+    name: Validate AuthService Dependencies
+
+    runs-on: ubuntu-latest
+
+    if: github.event_name == 'schedule' ||
+        github.actor == 'dependabot[bot]' ||
+        github.event_name == 'workflow_dispatch'
+
+    steps:
+
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: |
+          dotnet restore services/AuthService/AuthService.sln
+
+      - name: Build
+        run: |
+          dotnet build services/AuthService/AuthService.sln \
+            --configuration Release \
+            --no-restore
+
+      - name: Test
+        run: |
+          dotnet test services/AuthService/AuthService.sln \
+            --configuration Release \
+            --no-build
+
+  cyberapp:
+
+    name: Validate Cyber App Dependencies
+
+    runs-on: ubuntu-latest
+
+    if: github.event_name == 'schedule' ||
+        github.actor == 'dependabot[bot]' ||
+        github.event_name == 'workflow_dispatch'
+
+    defaults:
+      run:
+        working-directory: apps/cyber-app
+
+    steps:
+
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/cyber-app/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test -- --run
+
+      - name: Build
+        run: npm run build
