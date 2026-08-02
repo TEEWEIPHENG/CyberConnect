@@ -1,19 +1,22 @@
-name: CI/CD
+name: CD
 
 on:
+  workflow_run:
+    workflows:
+      - Security Scan
+    types:
+      - completed
   push:
     branches:
       - main
     tags:
       - 'v*'
-  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
   packages: write
   security-events: write
-  pull-requests: read
 
 env:
   REGISTRY: ghcr.io
@@ -38,107 +41,15 @@ jobs:
           filters: |
             frontend:
               - 'apps/cyber-app/**'
-              - '.github/workflows/ci-cd.yml'
+              - '.github/workflows/cd.yml'
             backend:
               - 'services/AuthService/**'
-              - '.github/workflows/ci-cd.yml'
-
-  frontend-ci:
-    name: Frontend CI
-    needs: changes
-    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/cyber-app
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: apps/cyber-app/package-lock.json
-
-      - name: Install frontend dependencies
-        run: npm ci
-
-      - name: Build frontend
-        run: npm run build
-
-      - name: Lint frontend
-        run: npm run lint
-
-  backend-ci:
-    name: Backend CI
-    needs: changes
-    if: needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.0.x
-
-      - name: Restore Auth service
-        run: dotnet restore services/AuthService/AuthService.slnx
-
-      - name: Run Auth service tests
-        run: dotnet test services/AuthService/AuthService.slnx --configuration Release --no-restore
-
-  dependency-review:
-    name: Dependency review
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Review dependencies
-        uses: actions/dependency-review-action@v4
-
-  codeql:
-    name: CodeQL analysis
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    strategy:
-      fail-fast: false
-      matrix:
-        language:
-          - javascript-typescript
-          - csharp
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: ${{ matrix.language }}
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
-
-      - name: Analyze
-        uses: github/codeql-action/analyze@v3
+              - '.github/workflows/cd.yml'
 
   publish-images:
     name: Publish container images
-    needs:
-      - changes
-      - frontend-ci
-      - backend-ci
-    if: github.event_name != 'pull_request' && (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch')
+    needs: changes
+    if: github.event_name != 'pull_request' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
 
     steps:
