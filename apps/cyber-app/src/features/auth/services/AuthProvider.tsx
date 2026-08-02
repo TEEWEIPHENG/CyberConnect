@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
-import { authApi } from './authApi'
 import { setAccessToken } from '@/shared/services/httpClient'
 import type { LoginResponse, LoginRequest } from '@/features/auth/types/login.types'
 
