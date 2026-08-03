@@ -1,0 +1,309 @@
+name: cyberconnect
+
+services:
+
+################################################################################
+# Traefik Reverse Proxy
+################################################################################
+
+  traefik:
+    image: traefik:v3.5
+    container_name: traefik
+
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+
+      - "--providers.file.directory=/etc/traefik/dynamic"
+
+      - "--accesslog=true"
+      - "--accesslog.format=json"
+
+      - "--log.level=INFO"
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic
+      - ./certificates:/certificates:ro
+
+    networks:
+      - frontend
+      
+    labels:
+
+      - traefik.enable=true
+
+      - traefik.http.routers.dashboard.rule=Host(`traefik.cyberconnect.local`)
+
+      - traefik.http.routers.dashboard.service=api@internal
+
+      - traefik.http.routers.dashboard.entrypoints=websecure
+
+      - traefik.http.routers.dashboard.tls=true
+
+      - traefik.http.routers.dashboard.middlewares=dashboard-auth@file
+      
+    restart: unless-stopped
+
+################################################################################
+# PostgreSQL
+################################################################################
+
+  postgres:
+
+    image: postgres:17
+
+    container_name: postgres
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
+      - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf
+
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - backend
+
+################################################################################
+# Redis
+################################################################################
+
+  redis:
+
+    image: redis:8
+
+    container_name: redis
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --requirepass
+      - ${REDIS_PASSWORD}
+
+    volumes:
+      - redis_data:/data
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "redis-cli",
+          "-a",
+          "${REDIS_PASSWORD}",
+          "ping"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - backend
+
+################################################################################
+# OpenSearch
+################################################################################
+
+  opensearch:
+
+    image: opensearchproject/opensearch:3.1.0
+
+    container_name: opensearch
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      discovery.type: single-node
+      bootstrap.memory_lock: "true"
+
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: ${OPENSEARCH_PASSWORD}
+
+      OPENSEARCH_JAVA_OPTS: "-Xms1g -Xmx1g"
+
+      plugins.security.ssl.http.enabled: "false"
+      plugins.security.ssl.transport.enabled: "false"
+
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -k -u admin:${OPENSEARCH_PASSWORD} https://localhost:9200 >/dev/null || exit 1"
+        ]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+    networks:
+      - backend
+
+################################################################################
+# OpenSearch Dashboard
+################################################################################
+
+  dashboards:
+
+    image: opensearchproject/opensearch-dashboards:3.1.0
+
+    container_name: dashboards
+
+    restart: unless-stopped
+
+    environment:
+      OPENSEARCH_HOSTS: '["https://opensearch:9200"]'
+
+    depends_on:
+      opensearch:
+        condition: service_healthy
+
+    labels:
+      - traefik.enable=true
+
+      - traefik.http.routers.dashboards.rule=Host(`search.cyberconnect.local`)
+      - traefik.http.routers.dashboards.entrypoints=websecure
+      - traefik.http.routers.dashboards.tls=true
+
+      - traefik.http.services.dashboards.loadbalancer.server.port=5601
+
+    networks:
+      - frontend
+      - backend
+
+################################################################################
+# MinIO
+################################################################################
+
+  minio:
+
+    image: quay.io/minio/minio:latest
+
+    container_name: minio
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    command: server /data --console-address ":9001"
+
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+
+    volumes:
+      - minio_data:/data
+
+    labels:
+
+      - traefik.enable=true
+
+      - traefik.http.routers.minio.rule=Host(`storage.cyberconnect.local`)
+      - traefik.http.routers.minio.entrypoints=websecure
+      - traefik.http.routers.minio.tls=true
+      - traefik.http.services.minio.loadbalancer.server.port=9000
+
+      - traefik.http.routers.minio-console.rule=Host(`console.cyberconnect.local`)
+      - traefik.http.routers.minio-console.entrypoints=websecure
+      - traefik.http.routers.minio-console.tls=true
+      - traefik.http.services.minio-console.loadbalancer.server.port=9001
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:9000/minio/health/live"
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - frontend
+      - backend
+
+################################################################################
+# Future Services
+################################################################################
+
+# authservice:
+#
+# cyberapp:
+#
+# auditservice:
+#
+# notificationservice:
+#
+# fileservice:
+
+################################################################################
+# Networks
+################################################################################
+
+networks:
+
+  frontend:
+    driver: bridge
+
+  backend:
+    driver: bridge
+
+################################################################################
+# Volumes
+################################################################################
+
+volumes:
+
+  postgres_data:
+
+  redis_data:
+
+  opensearch_data:
+
+  minio_data:

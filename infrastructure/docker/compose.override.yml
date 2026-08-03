@@ -1,0 +1,154 @@
+services:
+
+################################################################################
+# Traefik
+################################################################################
+
+  traefik:
+
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+
+      - "--providers.file.directory=/etc/traefik/dynamic"
+
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+
+      - "--log.level=DEBUG"
+
+      - "--accesslog=true"
+      - "--accesslog.format=json"
+
+    ports:
+      - "8080:8080"
+
+################################################################################
+# PostgreSQL
+################################################################################
+
+  postgres:
+
+    ports:
+      - "5432:5432"
+
+    environment:
+      TZ: ${TZ}
+
+################################################################################
+# Redis
+################################################################################
+
+  redis:
+
+    ports:
+      - "6379:6379"
+
+################################################################################
+# OpenSearch
+################################################################################
+
+  opensearch:
+
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+
+    environment:
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+
+################################################################################
+# OpenSearch Dashboards
+################################################################################
+
+  dashboards:
+
+    ports:
+      - "5601:5601"
+
+################################################################################
+# MinIO
+################################################################################
+
+  minio:
+
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+################################################################################
+# Auth Service
+################################################################################
+
+# Uncomment after AuthService exists
+
+# authservice:
+#
+#   build:
+#     context: ../../services/AuthService
+#     dockerfile: Dockerfile
+#
+#   volumes:
+#     - ../../services/AuthService:/src
+#
+#   environment:
+#     ASPNETCORE_ENVIRONMENT: Development
+#
+#   ports:
+#     - "5001:8080"
+#
+#   depends_on:
+#     postgres:
+#       condition: service_healthy
+#     redis:
+#       condition: service_healthy
+#
+#   labels:
+#     - traefik.enable=true
+#     - traefik.http.routers.auth.rule=Host(`auth.cyberconnect.local`)
+#     - traefik.http.routers.auth.entrypoints=websecure
+#     - traefik.http.routers.auth.tls=true
+#     - traefik.http.services.auth.loadbalancer.server.port=8080
+#
+#   develop:
+#     watch:
+#       - action: sync
+#         path: ../../services/AuthService
+#         target: /src
+
+################################################################################
+# Cyber Web App
+################################################################################
+
+# cyberapp:
+#
+#   build:
+#     context: ../../apps/cyber-app
+#
+#   volumes:
+#     - ../../apps/cyber-app:/app
+#     - /app/node_modules
+#
+#   command: npm run dev
+#
+#   ports:
+#     - "3000:3000"
+#
+#   environment:
+#     NODE_ENV: development
+#
+#   labels:
+#     - traefik.enable=true
+#     - traefik.http.routers.cyber.rule=Host(`app.cyberconnect.local`)
+#     - traefik.http.routers.cyber.entrypoints=websecure
+#     - traefik.http.routers.cyber.tls=true
+#     - traefik.http.services.cyber.loadbalancer.server.port=3000
+#
+#   develop:
+#     watch:
+#       - action: sync
+#         path: ../../apps/cyber-app
+#         target: /app

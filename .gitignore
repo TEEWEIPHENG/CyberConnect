@@ -1,0 +1,7 @@
+infrastructure/docker/.env
+infrastructure/docker/traefik/users/dashboard.htpasswd
+# Certificates
+infrastructure/docker/certificates/*.pem
+infrastructure/docker/certificates/*.key
+infrastructure/docker/certificates/*.crt
+infrastructure/docker/certificates/*.p12
