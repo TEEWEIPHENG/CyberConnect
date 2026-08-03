@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:26 AS build
+FROM node:22-alpine AS build
 # Force an internal package manager update to patch residual CVEs
 RUN apk update && apk upgrade --no-cache
 
