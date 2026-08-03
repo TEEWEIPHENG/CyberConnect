@@ -16,8 +16,8 @@ jobs:
     name: Detect changed projects
     runs-on: ubuntu-latest
     outputs:
-      frontend: ${{ steps.filter.outputs.frontend }}
-      backend: ${{ steps.filter.outputs.backend }}
+      cyberapp: ${{ steps.filter.outputs.cyberapp }}
+      authservice: ${{ steps.filter.outputs.authservice }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -27,17 +27,17 @@ jobs:
         uses: dorny/paths-filter@v3
         with:
           filters: |
-            frontend:
+            cyberapp:
               - 'apps/cyber-app/**'
               - '.github/workflows/ci.yml'
-            backend:
+            authservice:
               - 'services/AuthService/**'
               - '.github/workflows/ci.yml'
 
   frontend-ci:
-    name: Frontend CI
+    name: CyberApp CI
     needs: changes
-    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.changes.outputs.cyberapp == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -64,9 +64,9 @@ jobs:
         run: npm run lint
 
   backend-ci:
-    name: Backend CI
+    name: AuthService CI
     needs: changes
-    if: needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.changes.outputs.authservice == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
