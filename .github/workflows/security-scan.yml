@@ -20,8 +20,8 @@ jobs:
     name: Detect changed projects
     runs-on: ubuntu-latest
     outputs:
-      frontend: ${{ steps.filter.outputs.frontend }}
-      backend: ${{ steps.filter.outputs.backend }}
+      cyberapp: ${{ steps.filter.outputs.cyberapp }}
+      authservice: ${{ steps.filter.outputs.authservice }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -31,10 +31,10 @@ jobs:
         uses: dorny/paths-filter@v3
         with:
           filters: |
-            frontend:
+            cyberapp:
               - 'apps/cyber-app/**'
               - '.github/workflows/security-scan.yml'
-            backend:
+            authservice:
               - 'services/AuthService/**'
               - '.github/workflows/security-scan.yml'
 
