@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router'
 import { useAuthStore } from '@/features/auth/services/useAuthStore'
 import { PrimaryButton } from '@/shared/components/PrimaryButton'
 import { InputText } from '@/shared/components/InputText'

@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router'
 import { useAuthStore } from '@/features/auth/services/useAuthStore'
 
 export function ProtectedRoute() {

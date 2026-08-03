@@ -1,4 +1,4 @@
-import { Link, Outlet } from 'react-router-dom'
+import { Link, Outlet } from 'react-router'
 import { useAuthStore } from '@/features/auth/services/useAuthStore'
 import styles from './MainLayout.module.css'
 

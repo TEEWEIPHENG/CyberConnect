@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import MainLayout from '@/layouts/MainLayout'
