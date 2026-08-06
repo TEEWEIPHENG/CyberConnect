@@ -1,12 +1,5 @@
 <Solution>
   <Folder Name="/services/" />
-  <Folder Name="/services/AuthService/">
-    <Project Path="services/AuthService/AuthService.API/AuthService.API.csproj" />
-    <Project Path="services/AuthService/AuthService.Application/AuthService.Application.csproj" />
-    <Project Path="services/AuthService/AuthService.Domain/AuthService.Domain.csproj" />
-    <Project Path="services/AuthService/AuthService.Infrastructure/AuthService.Infrastructure.csproj" />
-  </Folder>
-  <Folder Name="/services/AuthService/Tests/">
-    <Project Path="services/AuthService/Tests/AuthService.UnitTest/AuthService.UnitTest.csproj" />
-  </Folder>
+  <Folder Name="/services/AuthService(depatched)/" />
+  <Folder Name="/services/AuthService(depatched)/Tests/" />
 </Solution>

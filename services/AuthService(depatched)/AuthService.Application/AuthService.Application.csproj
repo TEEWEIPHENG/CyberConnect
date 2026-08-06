@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AuthService.Domain\AuthService.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Validators\" />
   </ItemGroup>
 
