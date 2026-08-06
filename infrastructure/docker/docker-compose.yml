@@ -160,6 +160,8 @@ services:
 
       plugins.security.ssl.http.enabled: "false"
       plugins.security.ssl.transport.enabled: "false"
+      # Disable security plugin in local/dev compose to avoid requiring TLS certs
+      plugins.security.disabled: "true"
 
     ulimits:
       memlock:
@@ -173,7 +175,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl -k -u admin:${OPENSEARCH_PASSWORD} https://localhost:9200 >/dev/null || exit 1"
+          "curl -f http://localhost:9200 >/dev/null || exit 1"
         ]
       interval: 20s
       timeout: 10s
@@ -195,7 +197,7 @@ services:
     restart: unless-stopped
 
     environment:
-      OPENSEARCH_HOSTS: '["https://opensearch:9200"]'
+      OPENSEARCH_HOSTS: '["http://opensearch:9200"]'
 
     depends_on:
       opensearch:
