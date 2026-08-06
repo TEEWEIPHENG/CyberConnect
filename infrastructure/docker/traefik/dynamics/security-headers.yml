@@ -1,0 +1,36 @@
+http:
+
+  middlewares:
+
+    api-security:
+
+      headers:
+
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+
+        accessControlAllowOriginList:
+          - https://app.cyberconnect.local
+
+        accessControlAllowHeaders:
+          - "*"
+
+        accessControlExposeHeaders:
+          - X-Request-ID
+
+        addVaryHeader: true
+
+        customResponseHeaders:
+
+          Server: ""
+
+          X-Powered-By: ""
+
+          X-Frame-Options: DENY
+
+          X-Content-Type-Options: nosniff
+
+          X-XSS-Protection: "1; mode=block"

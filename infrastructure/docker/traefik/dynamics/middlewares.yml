@@ -1,0 +1,54 @@
+http:
+
+  middlewares:
+
+    compression:
+      compress: {}
+
+    secure-headers:
+
+      headers:
+
+        browserXssFilter: true
+
+        contentTypeNosniff: true
+
+        frameDeny: true
+
+        sslRedirect: true
+
+        stsSeconds: 31536000
+
+        stsIncludeSubdomains: true
+
+        stsPreload: true
+
+        forceSTSHeader: true
+
+        referrerPolicy: strict-origin
+
+        permissionsPolicy: >-
+          accelerometer=(),
+          camera=(),
+          geolocation=(),
+          microphone=()
+
+    rate-limit:
+
+      rateLimit:
+
+        average: 100
+
+        burst: 50
+
+    retry:
+
+      retry:
+
+        attempts: 3
+
+    dashboard-auth:
+
+      basicAuth:
+
+        usersFile: /etc/traefik/users/dashboard.htpasswd
