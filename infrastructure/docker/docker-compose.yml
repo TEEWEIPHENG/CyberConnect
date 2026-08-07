@@ -55,6 +55,27 @@ services:
       
     restart: unless-stopped
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.3
+    container_name: keycloak
+    restart: unless-stopped
+    command:
+      - start-dev
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    ports:
+      - "8081:8080"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.keycloak.rule=Host(`keycloak.cyberconnect.local`)
+      - traefik.http.routers.keycloak.entrypoints=websecure
+      - traefik.http.routers.keycloak.tls=true
+      - traefik.http.services.keycloak.loadbalancer.server.port=8080
+    networks:
+      - frontend
+      - backend
+
 ################################################################################
 # PostgreSQL
 ################################################################################
@@ -277,7 +298,26 @@ services:
 # authservice:
 #
 # cyberapp:
-#
+  cyberapp:
+    build:
+      context: ../../apps/cyber-app
+      dockerfile: Dockerfile
+    container_name: cyberapp
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment: {}
+    ports:
+      - "3000:80"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cyberapp.rule=Host(`app.cyberconnect.local`)
+      - traefik.http.routers.cyberapp.entrypoints=websecure
+      - traefik.http.routers.cyberapp.tls=true
+      - traefik.http.services.cyberapp.loadbalancer.server.port=80
+    networks:
+      - frontend
+      - backend
 # auditservice:
 #
 # notificationservice:

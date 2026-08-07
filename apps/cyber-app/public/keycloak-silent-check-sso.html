@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Keycloak Silent SSO</title>
+  </head>
+  <body>
+    <script>
+      parent.postMessage('kc-silent-check-sso-loaded', window.location.origin)
+    </script>
+  </body>
+</html>

@@ -1,9 +1,7 @@
-import { useState, type FormEvent } from 'react'
+import type { FormEvent } from 'react'
 import { useNavigate, useLocation } from 'react-router'
 import { useAuthStore } from '@/features/auth/services/useAuthStore'
 import { PrimaryButton } from '@/shared/components/PrimaryButton'
-import { InputText } from '@/shared/components/InputText'
-import { InputPassword } from '@/shared/components/InputPassword'
 import styles from './LoginPage.module.css'
 
 interface LocationState {
@@ -17,19 +15,16 @@ export function LoginPage() {
   const location = useLocation()
   const from = (location.state as LocationState | null)?.from?.pathname ?? '/dashboard'
 
-  const { login, loading, error } = useAuthStore(s => ({
+  const { login, loading, error } = useAuthStore((s) => ({
     login: s.login,
     loading: s.loading,
     error: s.error,
   }))
 
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
-    await login({ username, password })
+    await login()
     navigate(from, { replace: true })
   }
 
@@ -39,42 +34,19 @@ export function LoginPage() {
 
         <h2 className={styles.title}>Sign in to CyberTIP</h2>
         <form onSubmit={handleSubmit} className={styles.loginForm}>
-          <div>
-            <label className={styles.inputLabel}>Username</label>
-            <div className={styles.inputWrapper}>
-              <InputText
-                aria-label="username"
-                className={styles.inputField + ' ' + styles.usernameInput}
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                placeholder="Enter your username"
-              />
-            </div>
-          </div>
-          <div>
-            <label className={styles.inputLabel}>Password</label>
-            <div className={styles.inputWrapper}>
-              <InputPassword
-                aria-label="password"
-                className={styles.inputField + ' ' + styles.passwordInput}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="Enter your password"
-              />
-            </div>
-          </div>
+          <p className={styles.loginHint}>
+            You will be redirected to Keycloak for authentication.
+          </p>
           {error && <div className={styles.errorMessage}>{error}</div>}
           <div>
-            <PrimaryButton
-              type="submit"
-              disabled={loading}
-              className=""
-            >
-              {loading ? 'Signing...' : 'Sign In'}
+            <PrimaryButton type="submit" disabled={loading}>
+              {loading ? 'Redirecting...' : 'Sign in with Keycloak'}
             </PrimaryButton>
           </div>
         </form>
-        <p className="">Need access? <a className="">Contact administrator</a></p>
+        <p>
+          Need access? <a href="mailto:admin@cyberconnect.local">Contact administrator</a>
+        </p>
       </div>
     </>
   )

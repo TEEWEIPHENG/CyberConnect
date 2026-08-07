@@ -5,3 +5,5 @@ infrastructure/docker/certificates/*.pem
 infrastructure/docker/certificates/*.key
 infrastructure/docker/certificates/*.crt
 infrastructure/docker/certificates/*.p12
+apps/cyber-app/.env
+apps/cyber-app/.env.development
