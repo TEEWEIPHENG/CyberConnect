@@ -1,0 +1,72 @@
+name: Bug Report
+description: Report a software defect or unexpected behavior
+title: "[BUG] "
+labels:
+  - bug
+
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug.
+        Please provide enough details for reproduction.
+
+  - type: input
+    id: component
+    attributes:
+      label: Component
+      description: Which application/service is affected?
+      placeholder: "AuthService / cyber-app / BillingService"
+    validations:
+      required: true
+
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Explain the problem.
+    validations:
+      required: true
+
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Provide steps to reproduce the issue.
+      placeholder: |
+        1. Login
+        2. Navigate to dashboard
+        3. Click export
+        4. Error occurs
+
+    validations:
+      required: true
+
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Error Messages
+      render: shell
+
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
