@@ -13,12 +13,14 @@ services:
     command:
       - "--api.dashboard=true"
       - "--api.insecure=false"
+      - "--api.entrypoint=traefik"
 
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
 
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.traefik.address=:8080"
 
       - "--providers.file.directory=/etc/traefik/dynamic"
 
@@ -30,11 +32,24 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8080:8080"
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/dynamic:/etc/traefik/dynamic
       - ./certificates:/certificates:ro
+
+    labels:
+      - traefik.enable=true
+      # HTTP to HTTPS redirect
+      - traefik.http.routers.traefik-http.rule=Host(`traefik.cyberconnect.local`)
+      - traefik.http.routers.traefik-http.entrypoints=web
+      - traefik.http.routers.traefik-http.middlewares=redirect-https@docker
+      # HTTPS
+      - traefik.http.routers.traefik.rule=Host(`traefik.cyberconnect.local`)
+      - traefik.http.routers.traefik.entrypoints=websecure
+      - traefik.http.routers.traefik.tls=true
+      - traefik.http.services.traefik.loadbalancer.server.port=8080
 
     networks:
       - frontend
@@ -190,6 +205,12 @@ services:
     labels:
       - traefik.enable=true
 
+      # HTTP to HTTPS redirect
+      - traefik.http.routers.dashboards-http.rule=Host(`search.cyberconnect.local`)
+      - traefik.http.routers.dashboards-http.entrypoints=web
+      - traefik.http.routers.dashboards-http.middlewares=redirect-https@docker
+
+      # HTTPS
       - traefik.http.routers.dashboards.rule=Host(`search.cyberconnect.local`)
       - traefik.http.routers.dashboards.entrypoints=websecure
       - traefik.http.routers.dashboards.tls=true
@@ -228,14 +249,30 @@ services:
 
       - traefik.enable=true
 
+      # HTTP to HTTPS redirect (storage)
+      - traefik.http.routers.minio-http.rule=Host(`storage.cyberconnect.local`)
+      - traefik.http.routers.minio-http.entrypoints=web
+      - traefik.http.routers.minio-http.middlewares=redirect-https@docker
+      - traefik.http.routers.minio-http.service=minio-storage
+
+      # HTTPS (storage)
       - traefik.http.routers.minio.rule=Host(`storage.cyberconnect.local`)
       - traefik.http.routers.minio.entrypoints=websecure
       - traefik.http.routers.minio.tls=true
-      - traefik.http.services.minio.loadbalancer.server.port=9000
+      - traefik.http.routers.minio.service=minio-storage
+      - traefik.http.services.minio-storage.loadbalancer.server.port=9000
 
+      # HTTP to HTTPS redirect (console)
+      - traefik.http.routers.minio-console-http.rule=Host(`console.cyberconnect.local`)
+      - traefik.http.routers.minio-console-http.entrypoints=web
+      - traefik.http.routers.minio-console-http.middlewares=redirect-https@docker
+      - traefik.http.routers.minio-console-http.service=minio-console
+
+      # HTTPS (console)
       - traefik.http.routers.minio-console.rule=Host(`console.cyberconnect.local`)
       - traefik.http.routers.minio-console.entrypoints=websecure
       - traefik.http.routers.minio-console.tls=true
+      - traefik.http.routers.minio-console.service=minio-console
       - traefik.http.services.minio-console.loadbalancer.server.port=9001
 
     healthcheck:
@@ -270,7 +307,12 @@ services:
       - "8081:8080"
     labels:
       - traefik.enable=true
-      - traefik.http.routers.keycloak.rule=Host(`keycloak.cyberconnect.local`)
+      # HTTP to HTTPS redirect
+      - traefik.http.routers.keycloak-http.rule=Host(`auth.cyberconnect.local`)
+      - traefik.http.routers.keycloak-http.entrypoints=web
+      - traefik.http.routers.keycloak-http.middlewares=redirect-https@docker
+      # HTTPS
+      - traefik.http.routers.keycloak.rule=Host(`auth.cyberconnect.local`)
       - traefik.http.routers.keycloak.entrypoints=websecure
       - traefik.http.routers.keycloak.tls=true
       - traefik.http.services.keycloak.loadbalancer.server.port=8080
@@ -280,13 +322,87 @@ services:
 
 
 ################################################################################
+# CyberApp (Main App)
+################################################################################
+
+#   cyberapp:
+#     image: cyberconnect/app:latest
+#     container_name: cyberapp
+#     restart: unless-stopped
+#     labels:
+#       - traefik.enable=true
+#       # HTTP to HTTPS redirect (app.cyberconnect.local)
+#       - traefik.http.routers.cyberapp-http.rule=Host(`app.cyberconnect.local`)
+#       - traefik.http.routers.cyberapp-http.entrypoints=web
+#       - traefik.http.routers.cyberapp-http.middlewares=redirect-https
+#       # HTTPS (app.cyberconnect.local)
+#       - traefik.http.routers.cyberapp.rule=Host(`app.cyberconnect.local`)
+#       - traefik.http.routers.cyberapp.entrypoints=websecure
+#       - traefik.http.routers.cyberapp.tls=true
+#       - traefik.http.services.cyberapp.loadbalancer.server.port=3000
+#       # HTTP to HTTPS redirect (cyberconnect.local)
+#       - traefik.http.routers.cyberconnect-http.rule=Host(`cyberconnect.local`)
+#       - traefik.http.routers.cyberconnect-http.entrypoints=web
+#       - traefik.http.routers.cyberconnect-http.middlewares=redirect-https
+#       # HTTPS (cyberconnect.local)
+#       - traefik.http.routers.cyberconnect.rule=Host(`cyberconnect.local`)
+#       - traefik.http.routers.cyberconnect.entrypoints=websecure
+#       - traefik.http.routers.cyberconnect.tls=true
+#       - traefik.http.services.cyberconnect.loadbalancer.server.port=3000
+#     networks:
+#       - frontend
+#       - backend
+
+# ################################################################################
+# # API Service
+# ################################################################################
+
+#   api:
+#     image: cyberconnect/api:latest
+#     container_name: api
+#     restart: unless-stopped
+#     labels:
+#       - traefik.enable=true
+#       # HTTP to HTTPS redirect
+#       - traefik.http.routers.api-http.rule=Host(`api.cyberconnect.local`)
+#       - traefik.http.routers.api-http.entrypoints=web
+#       - traefik.http.routers.api-http.middlewares=redirect-https
+#       # HTTPS
+#       - traefik.http.routers.api.rule=Host(`api.cyberconnect.local`)
+#       - traefik.http.routers.api.entrypoints=websecure
+#       - traefik.http.routers.api.tls=true
+#       - traefik.http.services.api.loadbalancer.server.port=5000
+#     networks:
+#       - frontend
+#       - backend
+
+# ################################################################################
+# # Auth Service
+# ################################################################################
+
+#   authservice:
+#     image: cyberconnect/auth:latest
+#     container_name: authservice
+#     restart: unless-stopped
+#     labels:
+#       - traefik.enable=true
+#       # HTTP to HTTPS redirect
+#       - traefik.http.routers.authservice-http.rule=Host(`auth.cyberconnect.local`)
+#       - traefik.http.routers.authservice-http.entrypoints=web
+#       - traefik.http.routers.authservice-http.middlewares=redirect-https
+#       # HTTPS
+#       - traefik.http.routers.authservice.rule=Host(`auth.cyberconnect.local`)
+#       - traefik.http.routers.authservice.entrypoints=websecure
+#       - traefik.http.routers.authservice.tls=true
+#       - traefik.http.services.authservice.loadbalancer.server.port=8000
+#     networks:
+#       - frontend
+#       - backend
+
+################################################################################
 # Future Services
 ################################################################################
 
-# authservice:
-#
-# cyberapp:
-#
 # auditservice:
 #
 # notificationservice:
