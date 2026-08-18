@@ -1,15 +1,9 @@
-import { useAuth } from "../../auth/AuthProvider";
+import { Nav } from "../../components/Nav/Nav";
 
 export default function Dashboard() {
-  const { logout } = useAuth();
-
   return (
-    <div>
-      <h1>CyberConnect Dashboard</h1>
-
-      <button onClick={logout}>
-        Logout
-      </button>
-    </div>
+    <>
+      <h1>Dashboard</h1>
+    </>
   );
 }

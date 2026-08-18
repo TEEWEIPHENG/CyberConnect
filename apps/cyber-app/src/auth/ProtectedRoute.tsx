@@ -15,7 +15,7 @@ export default function ProtectedRoute({
   }
 
   if (!authenticated) {
-    return <Navigate to="/login" replace />;
+    useAuth().login(); // Trigger login if not authenticated
   }
 
   return children;

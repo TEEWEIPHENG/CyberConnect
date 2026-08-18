@@ -6,17 +6,19 @@ import {
   type ReactNode,
 } from "react";
 
-import keycloak from "./keycloak";
+import keycloak, { initializeKeycloak } from "./keycloak";
 
 interface AuthContextType {
   authenticated: boolean;
   loading: boolean;
+  token?: string;
   login: () => Promise<void>;
   logout: () => Promise<void>;
-  token?: string;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(
+  undefined,
+);
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -28,24 +30,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setToken] = useState<string>();
 
   useEffect(() => {
-    const initializeKeycloak = async () => {
-      try {
-        const authenticated = await keycloak.init({
-          onLoad: "check-sso",
-          pkceMethod: "S256",
-          checkLoginIframe: false,
-        });
+    let mounted = true;
 
-        setAuthenticated(authenticated);
+    const initialize = async () => {
+      try {
+        const isAuthenticated = await initializeKeycloak();
+
+        if (!mounted) {
+          return;
+        }
+
+        setAuthenticated(isAuthenticated);
         setToken(keycloak.token);
       } catch (error) {
         console.error("Keycloak initialization failed:", error);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    initializeKeycloak();
+    initialize();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const login = async () => {
@@ -63,9 +73,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       value={{
         authenticated,
         loading,
+        token,
         login,
         logout,
-        token,
       }}
     >
       {children}
@@ -73,11 +83,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error("useAuth must be used inside AuthProvider");
+    throw new Error(
+      "useAuth must be used inside AuthProvider",
+    );
   }
 
   return context;
