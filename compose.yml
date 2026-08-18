@@ -64,7 +64,7 @@ services:
 
     image: postgres:18
 
-    container_name: postgres
+    container_name: cyberconnect-keycloak-db
 
     restart: unless-stopped
 
@@ -72,9 +72,9 @@ services:
       - .env
 
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${KEYCLOAK_DB_USERNAME}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      POSTGRES_DB: keycloakdb
 
     volumes:
       - postgres_data:/var/lib/postgresql
@@ -295,11 +295,11 @@ services:
 # Keycloak
 ################################################################################
   keycloak:
-    image: quay.io/keycloak/keycloak:26.7.1
+    image: quay.io/keycloak/keycloak:latest
     container_name: keycloak
     restart: unless-stopped
     command:
-      - start-dev
+      - start
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
@@ -308,8 +308,11 @@ services:
       KC_PROXY_HEADERS: xforwarded
       KC_HTTP_ENABLED: "true"
 
-    ports:
-      - "8081:8080"
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloakdb
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USERNAME}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+
     labels:
       - traefik.enable=true
       # HTTP to HTTPS redirect
@@ -324,7 +327,8 @@ services:
     networks:
       - frontend
       - backend
-
+    depends_on:
+      - postgres
 
 ################################################################################
 # CyberApp (Main App)
