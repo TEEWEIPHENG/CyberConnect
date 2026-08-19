@@ -12,8 +12,8 @@ services:
 
     command:
       - "--api.dashboard=true"
+      - "--api.dashboard.address=:8080"
       - "--api.insecure=false"
-      - "--api.entrypoint=traefik"
 
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
