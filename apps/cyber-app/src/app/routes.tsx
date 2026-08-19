@@ -17,8 +17,9 @@ export default function AppRoutes() {
         path="/"
         element={
           <ProtectedRoute>
-            <Nav />
-            <Dashboard />
+            <Nav>
+              <Dashboard />
+            </Nav>
           </ProtectedRoute>
         }
       />
@@ -26,8 +27,9 @@ export default function AppRoutes() {
         path="/profile"
         element={
           <ProtectedRoute>
-            <Nav />
-            <ProfilePage />
+            <Nav>
+              <ProfilePage />
+            </Nav>
           </ProtectedRoute>
         }
       />
@@ -35,8 +37,9 @@ export default function AppRoutes() {
         path="/assets"
         element={
           <ProtectedRoute>
-            <Nav />
-            <AssetManagementPage />
+            <Nav>
+              <AssetManagementPage />
+            </Nav>
           </ProtectedRoute>
         }
       />
@@ -45,8 +48,9 @@ export default function AppRoutes() {
         path="/vulnerabilities"
         element={
           <ProtectedRoute>
-            <Nav />
-            <VulnerabilityManagementPage />
+            <Nav>
+              <VulnerabilityManagementPage />
+            </Nav>
           </ProtectedRoute>
         }
       />
@@ -54,8 +58,9 @@ export default function AppRoutes() {
         path="/reports"
         element={
           <ProtectedRoute>
-            <Nav />
-            <ReportsPage />
+            <Nav>
+              <ReportsPage />
+            </Nav>
           </ProtectedRoute>
         }
       />
@@ -63,8 +68,9 @@ export default function AppRoutes() {
         path="/osint"
         element={
           <ProtectedRoute>
-            <Nav />
-            <OSINTPage />
+            <Nav>
+              <OSINTPage />
+            </Nav>
           </ProtectedRoute>
         }
       />
@@ -72,8 +78,9 @@ export default function AppRoutes() {
         path="/integrations"
         element={
           <ProtectedRoute>
-            <Nav />
-            <IntegrationPage />
+            <Nav>
+              <IntegrationPage />
+            </Nav>
           </ProtectedRoute>
         }
       />

@@ -12,6 +12,7 @@ interface AuthContextType {
   authenticated: boolean;
   loading: boolean;
   token?: string;
+  userProfile: Keycloak.KeycloakProfile | null;
   login: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -28,6 +29,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string>();
+  const [userProfile, setUserProfile] = useState<Keycloak.KeycloakProfile | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -41,6 +43,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
 
         setAuthenticated(isAuthenticated);
+        if (isAuthenticated) {
+          keycloak
+            .loadUserProfile()
+            .then((p) => setUserProfile(p))
+            .catch((err) => console.error('Failed to load profile', err))
+            .finally(() => setLoading(false));
+
+        }
         setToken(keycloak.token);
       } catch (error) {
         console.error("Keycloak initialization failed:", error);
@@ -76,6 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         token,
         login,
         logout,
+        userProfile,
       }}
     >
       {children}
