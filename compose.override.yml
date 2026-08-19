@@ -13,15 +13,16 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
 
-      - "--providers.file.directory=/etc/traefik/dynamic"
-
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.traefik.address=:8080"
 
-      - "--log.level=DEBUG"
+      - "--providers.file.directory=/etc/traefik/dynamic"
 
       - "--accesslog=true"
       - "--accesslog.format=json"
+
+      - "--log.level=DEBUG"
 
     ports:
       - "8080:8080"

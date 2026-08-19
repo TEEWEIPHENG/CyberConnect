@@ -12,7 +12,6 @@ services:
 
     command:
       - "--api.dashboard=true"
-      - "--api.dashboard.address=:8080"
       - "--api.insecure=false"
 
       - "--providers.docker=true"
@@ -44,7 +43,7 @@ services:
       # HTTP to HTTPS redirect
       - traefik.http.routers.traefik-http.rule=Host(`traefik.cyberconnect.local`)
       - traefik.http.routers.traefik-http.entrypoints=web
-      - traefik.http.routers.traefik-http.middlewares=redirect-https@docker
+      - traefik.http.routers.traefik-http.middlewares=redirect-https@file
       # HTTPS
       - traefik.http.routers.traefik.rule=Host(`traefik.cyberconnect.local`)
       - traefik.http.routers.traefik.entrypoints=websecure
@@ -53,6 +52,7 @@ services:
 
     networks:
       - frontend
+      - backend
 
     restart: unless-stopped
 
@@ -208,7 +208,7 @@ services:
       # HTTP to HTTPS redirect
       - traefik.http.routers.dashboards-http.rule=Host(`search.cyberconnect.local`)
       - traefik.http.routers.dashboards-http.entrypoints=web
-      - traefik.http.routers.dashboards-http.middlewares=redirect-https@docker
+      - traefik.http.routers.dashboards-http.middlewares=redirect-https@file
 
       # HTTPS
       - traefik.http.routers.dashboards.rule=Host(`search.cyberconnect.local`)
@@ -252,7 +252,7 @@ services:
       # HTTP to HTTPS redirect (storage)
       - traefik.http.routers.minio-http.rule=Host(`storage.cyberconnect.local`)
       - traefik.http.routers.minio-http.entrypoints=web
-      - traefik.http.routers.minio-http.middlewares=redirect-https@docker
+      - traefik.http.routers.minio-http.middlewares=redirect-https@file
       - traefik.http.routers.minio-http.service=minio-storage
 
       # HTTPS (storage)
@@ -265,7 +265,7 @@ services:
       # HTTP to HTTPS redirect (console)
       - traefik.http.routers.minio-console-http.rule=Host(`console.cyberconnect.local`)
       - traefik.http.routers.minio-console-http.entrypoints=web
-      - traefik.http.routers.minio-console-http.middlewares=redirect-https@docker
+      - traefik.http.routers.minio-console-http.middlewares=redirect-https@file
       - traefik.http.routers.minio-console-http.service=minio-console
 
       # HTTPS (console)
@@ -318,7 +318,7 @@ services:
       # HTTP to HTTPS redirect
       - traefik.http.routers.keycloak-http.rule=Host(`auth.cyberconnect.local`)
       - traefik.http.routers.keycloak-http.entrypoints=web
-      - traefik.http.routers.keycloak-http.middlewares=redirect-https@docker
+      - traefik.http.routers.keycloak-http.middlewares=redirect-https@file
       # HTTPS
       - traefik.http.routers.keycloak.rule=Host(`auth.cyberconnect.local`)
       - traefik.http.routers.keycloak.entrypoints=websecure
