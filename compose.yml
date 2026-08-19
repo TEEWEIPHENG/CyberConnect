@@ -334,33 +334,24 @@ services:
 # CyberApp (Main App)
 ################################################################################
 
-#   cyberapp:
-#     image: cyberconnect/app:latest
-#     container_name: cyberapp
-#     restart: unless-stopped
-#     labels:
-#       - traefik.enable=true
-#       # HTTP to HTTPS redirect (app.cyberconnect.local)
-#       - traefik.http.routers.cyberapp-http.rule=Host(`app.cyberconnect.local`)
-#       - traefik.http.routers.cyberapp-http.entrypoints=web
-#       - traefik.http.routers.cyberapp-http.middlewares=redirect-https
-#       # HTTPS (app.cyberconnect.local)
-#       - traefik.http.routers.cyberapp.rule=Host(`app.cyberconnect.local`)
-#       - traefik.http.routers.cyberapp.entrypoints=websecure
-#       - traefik.http.routers.cyberapp.tls=true
-#       - traefik.http.services.cyberapp.loadbalancer.server.port=3000
-#       # HTTP to HTTPS redirect (cyberconnect.local)
-#       - traefik.http.routers.cyberconnect-http.rule=Host(`cyberconnect.local`)
-#       - traefik.http.routers.cyberconnect-http.entrypoints=web
-#       - traefik.http.routers.cyberconnect-http.middlewares=redirect-https
-#       # HTTPS (cyberconnect.local)
-#       - traefik.http.routers.cyberconnect.rule=Host(`cyberconnect.local`)
-#       - traefik.http.routers.cyberconnect.entrypoints=websecure
-#       - traefik.http.routers.cyberconnect.tls=true
-#       - traefik.http.services.cyberconnect.loadbalancer.server.port=3000
-#     networks:
-#       - frontend
-#       - backend
+  cyberapp:
+    image: cyberconnect/app:latest
+    container_name: cyberapp
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      # HTTP to HTTPS redirect (app.cyberconnect.local)
+      - traefik.http.routers.cyberapp-http.rule=Host(`app.cyberconnect.local`)
+      - traefik.http.routers.cyberapp-http.entrypoints=web
+      - traefik.http.routers.cyberapp-http.middlewares=redirect-https@file
+      # HTTPS (app.cyberconnect.local)
+      - traefik.http.routers.cyberapp.rule=Host(`app.cyberconnect.local`)
+      - traefik.http.routers.cyberapp.entrypoints=websecure
+      - traefik.http.routers.cyberapp.tls=true
+      - traefik.http.services.cyberapp.loadbalancer.server.port=3000
+    networks:
+      - frontend
+      - backend
 
 # ################################################################################
 # # API Service
