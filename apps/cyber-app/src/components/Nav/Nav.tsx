@@ -20,7 +20,7 @@ export function Nav({ children }: { children: React.ReactNode }) {
         <nav className={styles.navLinks}>
           <ul>
             <li><a href="/">Home</a></li>
-            <li><a href="/assets">Assets</a></li>
+            <li><a href="/asset">Assets</a></li>
             <li><a href="/vulnerabilities">Vulnerabilities</a></li>
             <li><a href="/reports">Reports</a></li>
             <li><a href="/osint">OSINT</a></li>

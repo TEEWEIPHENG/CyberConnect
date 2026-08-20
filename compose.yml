@@ -335,8 +335,17 @@ services:
 ################################################################################
 
   cyberapp:
-    image: cyberconnect/app:latest
+    build:
+      context: ./apps/cyber-app
+      dockerfile: DOCKERFILE
+      args:
+        VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
+        VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
+        VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
+        VITE_API_URL: ${VITE_API_URL}
     container_name: cyberapp
+    ports:
+      - "3000:3000"
     restart: unless-stopped
     labels:
       - traefik.enable=true

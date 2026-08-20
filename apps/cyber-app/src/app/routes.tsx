@@ -34,7 +34,7 @@ export default function AppRoutes() {
         }
       />
       <Route
-        path="/assets"
+        path="/asset"
         element={
           <ProtectedRoute>
             <Nav>
