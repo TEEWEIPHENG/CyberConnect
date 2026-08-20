@@ -124,32 +124,37 @@ services:
 # Cyber Web App
 ################################################################################
 
-# cyberapp:
-#
-#   build:
-#     context: ../../apps/cyber-app
-#
-#   volumes:
-#     - ../../apps/cyber-app:/app
-#     - /app/node_modules
-#
-#   command: npm run dev
-#
-#   ports:
-#     - "3000:3000"
-#
-#   environment:
-#     NODE_ENV: development
-#
-#   labels:
-#     - traefik.enable=true
-#     - traefik.http.routers.cyber.rule=Host(`app.cyberconnect.local`)
-#     - traefik.http.routers.cyber.entrypoints=websecure
-#     - traefik.http.routers.cyber.tls=true
-#     - traefik.http.services.cyber.loadbalancer.server.port=3000
-#
-#   develop:
-#     watch:
-#       - action: sync
-#         path: ../../apps/cyber-app
-#         target: /app
+  cyberapp:
+
+    build:
+      context: ./apps/cyber-app
+      dockerfile: Dockerfile.dev
+    container_name: cyberapp-dev
+    volumes:
+      - ./apps/cyber-app:/app
+      - /app/node_modules
+
+    command: npm run dev -- --host 0.0.0.0
+
+    ports:
+      - "5173:5173"
+
+    environment:
+      NODE_ENV: development
+      CHOKIDAR_USEPOLLING: true # Ensures file changes trigger reloads across OS environments
+
+    labels: !override
+      - traefik.enable=true
+      - traefik.http.routers.cyberapp-http.rule=Host(`app.cyberconnect.local`)
+      - traefik.http.routers.cyberapp-http.entrypoints=web
+      - traefik.http.routers.cyberapp-http.middlewares=redirect-https@file
+      - traefik.http.routers.cyber.rule=Host(`app.cyberconnect.local`)
+      - traefik.http.routers.cyber.entrypoints=websecure
+      - traefik.http.routers.cyber.tls=true
+      - traefik.http.services.cyber.loadbalancer.server.port=5173
+
+    develop:
+      watch:
+        - action: sync
+          path: ./apps/cyber-app
+          target: /app
