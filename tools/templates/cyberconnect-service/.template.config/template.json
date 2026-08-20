@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "CyberConnect",
+  "classifications": [
+    "Web",
+    "ASP.NET Core",
+    "Microservice",
+    "Clean Architecture"
+  ],
+  "identity": "CyberConnect.Service",
+  "name": "CyberConnect Microservice",
+  "shortName": "cyberconnect-service",
+  "sourceName": "__ServiceName__",
+  "preferNameDirectory": true,
+  "symbols": {
+    "ServiceName": {
+      "type": "parameter",
+      "datatype": "text",
+      "replaces": "__ServiceName__"
+    }
+  }
+}
