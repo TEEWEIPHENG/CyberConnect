@@ -1,0 +1,32 @@
+# ----------------------------
+# Build stage
+# ----------------------------
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy csproj(s) first for faster restore
+COPY ["TenantService.API/TenantService.API.csproj", "TenantService.API/"]
+COPY ["TenantService.Application/TenantService.Application.csproj", "TenantService.Application/"]
+COPY ["TenantService.Infrastructure/TenantService.Infrastructure.csproj", "TenantService.Infrastructure/"]
+COPY ["TenantService.Domain/TenantService.Domain.csproj", "TenantService.Domain/"]
+
+RUN dotnet restore "TenantService.API/TenantService.API.csproj"
+
+# Copy the rest
+COPY . .
+
+# Publish
+RUN dotnet publish "TenantService.API/TenantService.API.csproj" -c Release -o /app/publish --no-restore
+
+# ----------------------------
+# Runtime stage
+# ----------------------------
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+
+ENV ASPNETCORE_URLS=http://+:80
+EXPOSE 80
+
+COPY --from=build /app/publish .
+
+ENTRYPOINT ["dotnet", "TenantService.API.dll"]
