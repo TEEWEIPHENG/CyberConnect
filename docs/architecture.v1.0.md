@@ -513,6 +513,60 @@ API Gateway / BFF
 Backend Services
 ```
 
+## Port Usage Convention
+
+To keep local development and deployment predictable, the platform should use a simple port convention aligned with the current Docker Compose setup:
+
+```text
+Frontend applications: 3000+
+Backend services: 5000+
+Public ingress: 80 / 443
+Admin / tooling ports: 8080+ / 9000+ / 5601
+```
+
+Current Compose ports in use:
+
+```text
+Traefik dashboard: 8080
+Traefik HTTP: 80
+Traefik HTTPS: 443
+Keycloak: 8081
+OpenSearch Dashboard: 5601
+MinIO API: 9000
+MinIO Console: 9001
+```
+
+Recommended internal service allocation for future platform services:
+
+```text
+Frontend (React/Vite): 3000-3099
+API Gateway / BFF: 5000
+AuthService: 5001
+TenantService: 5002
+AssetService: 5003
+VulnerabilityService: 5004
+ScanService: 5005
+OSINTService: 5006
+ThreatIntelService: 5007
+IncidentService: 5008
+ReportService: 5009
+NotificationService: 5010
+AuditService: 5011
+PolicyService: 5012
+IntegrationService: 5013
+```
+
+Future reserved ranges:
+
+```text
+Frontend growth: 3100-3999
+Backend growth: 5100-5999
+Worker / security runtime: 6000-6999
+Additional admin tools: 7000-7999
+```
+
+In production, public entrypoints may still be exposed through Traefik on standard ports 80/443, while internal service ports remain on the 3000+/5000+ ranges behind the ingress layer. Reserved future ranges are kept separate so the platform can expand without conflicting with current local infrastructure.
+
 ---
 
 # 12. Backend Architecture
