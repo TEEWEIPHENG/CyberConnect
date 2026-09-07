@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using TenantService.Infrastructure.Persistence;
 using TenantService.Application.Abstractions.Persistence;
+using TenantService.Infrastructure.Persistence.Repositories;
 
 namespace TenantService.Infrastructure;
 
