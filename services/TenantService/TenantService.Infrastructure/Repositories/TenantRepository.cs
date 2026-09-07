@@ -1,33 +1,24 @@
 using TenantService.Domain.Entities;
 using TenantService.Application.Abstractions.Persistence;
-using TenantService.Infrastructure.Persistence;
 
-namespace TenantService.Infrastructure;
+namespace TenantService.Infrastructure.Persistence.Repositories;
 
 public class TenantRepository : ITenantRepository
 {
-    private readonly TenantDbContext _context;
+    private readonly TenantDbContext _dbContext;
 
-    public TenantRepository(TenantDbContext context)
+    public TenantRepository(TenantDbContext dbContext)
     {
-        _context = context;
+        _dbContext = dbContext;
     }
-
-    
-    public async Task<Tenant?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public Task<Tenant?> GetByKeycloakOrganizationIdAsync(
+           string organizationId,
+           CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
-    }
-
-    public async Task AddAsync(Tenant tenant, CancellationToken cancellationToken)
-    {
-        
-        throw new NotImplementedException();
-    }
-
-    public async Task SaveChangesAsync(CancellationToken cancellationToken)
-    {
-        
-        throw new NotImplementedException();
+        return _dbContext.Tenants
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                x => x.KeycloakOrganizationId == organizationId,
+                cancellationToken);
     }
 }
